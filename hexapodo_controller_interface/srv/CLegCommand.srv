@@ -1,0 +1,18 @@
+#Command service for RHex C-Leg.
+
+#This service sends an request for changing the current reference command and the kind of control that is being used.
+#The arguments description is the following:
+#   value:  The value of the command given. Depending on the type of control its units vary:
+#                position: [rad]
+#                velocity: [rad/s]
+#   position_control:   if true, the command given will be processed as a position value, otherwise will be processed
+#                       as false.
+#                true:  position control.
+#                false:  velocity control.
+
+float64 value
+bool position_control
+
+---
+
+bool ok

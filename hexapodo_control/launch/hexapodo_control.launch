@@ -1,0 +1,47 @@
+<launch>
+
+<!-- Parametro que indica si se deben cargar los controladores de posicion en vez de los de velocidad
+FALSE: Velocidad
+TRUE:  Posicion -->
+<arg name="position" default="false"/>
+
+<!-- Grupo a cargar si el controlador es de posicion -->
+<group if="$(arg position)">
+
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find hexapodo_control)/config/hexapodo_control.yaml" command="load"/>
+
+    <!-- load the controllers -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+      output="screen" ns="/hexapodo" args="joint_state_controller
+                                       pata1_position_controller
+                                       pata2_position_controller
+                                       pata3_position_controller
+                                       pata4_position_controller
+                                       pata5_position_controller
+                                       pata6_position_controller"/>
+</group>
+
+<!-- Grupo a cargar si el controlador es de velocidad -->
+<group unless="$(arg position)">
+
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find hexapodo_control)/config/hexapodo_control.yaml" command="load"/>
+
+    <!-- load the controllers -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+      output="screen" ns="/hexapodo" args="joint_state_controller
+                                       pata1_velocity_controller
+                                       pata2_velocity_controller
+                                       pata3_velocity_controller
+                                       pata4_velocity_controller
+                                       pata5_velocity_controller
+                                       pata6_velocity_controller"/>
+</group>
+
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+      respawn="false" output="screen">
+  <remap from="/joint_states" to="/hexapodo/joint_states" />
+</node>
+
+</launch>

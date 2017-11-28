@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <name>hexapodo_walking_modes</name>
+  <version>1.0.0</version>
+  <description>Package that contains the differents walking modes: altern tripod, wave, ...</description>
+
+  <license>BSD</license>
+
+  <author email="raul.ceboll.arroyo@alumnos.upm.es">Raul Cebolla Arroyo</author>
+  <author email="jorge.deleon@upm.es">Jorge De Leon Rivas</author>
+  <maintainer email="jorge.deleon@upm.es">Jorge De Leon Rivas</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>hexapodo_controller_interface</build_depend>
+
+  <run_depend>hexapodo_controller_interface</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>  
+
+</package>

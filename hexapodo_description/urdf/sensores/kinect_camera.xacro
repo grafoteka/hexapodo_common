@@ -1,0 +1,69 @@
+<?xml version="1.0" ?>
+<robot name="kinect_camera" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<!--********************************************************************************-->
+<!-- Definicion de la macro para camara KINECT -->
+<!--********************************************************************************-->
+
+<xacro:macro name="kinect_camera" params="name parent_link *origin">
+
+    <link name="${name}_kinect_cam">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.001"/>
+            <inertia ixx="0.001"  ixy="0"  ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+        </inertial>
+
+        <visual>
+            <origin xyz="-0.005 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.01 0.01 0.01" />
+            </geometry>
+            <material name="transparent">
+                <color rgba="0 0 0 0"/>
+            </material>
+        </visual>
+
+        <collision>
+            <origin xyz="-0.005 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.01 0.01 0.01" />
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="${name}_to_${parent_link}_joint" type="fixed">
+        <xacro:insert_block name="origin"/>
+        <parent link="${parent_link}"/>
+        <child link="${name}_kinect_cam"/>
+    </joint>
+
+    <gazebo reference="${name}_kinect_cam">
+      <plugin name="${name}_kinect_cam_controller" filename="libgazebo_ros_openni_kinect.so">
+        <baseline>0.2</baseline>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>1.0</updateRate>
+        <cameraName>${name}_kinect_cam</cameraName>
+        <imageTopicName>/${name}/depth/image_raw</imageTopicName>
+        <cameraInfoTopicName>/${name}/depth/camera_info</cameraInfoTopicName>
+        <depthImageTopicName>/${name}/depth/image_raw</depthImageTopicName>
+        <depthImageInfoTopicName>/${name}/depth/camera_info</depthImageInfoTopicName>
+        <pointCloudTopicName>/${name}/depth/points</pointCloudTopicName>
+        <frameName>${name}_kinect_cam</frameName>
+        <pointCloudCutoff>0.5</pointCloudCutoff>
+        <distortionK1>0.00000001</distortionK1>
+        <distortionK2>0.00000001</distortionK2>
+        <distortionK3>0.00000001</distortionK3>
+        <distortionT1>0.00000001</distortionT1>
+        <distortionT2>0.00000001</distortionT2>
+        <CxPrime>0</CxPrime>
+        <Cx>0</Cx>
+        <Cy>0</Cy>
+        <focalLength>0</focalLength>
+        <hackBaseline>0</hackBaseline>
+      </plugin>
+    </gazebo>
+
+</xacro:macro>
+
+</robot>

@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<robot name="base" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<xacro:property name="w_radius" value="${108.743/1e3}"/>
+
+<link name="base_footprint">
+    <visual>
+        <geometry>
+            <box size="0.0001 0.0001 0.0001"/>
+        </geometry>
+        <material name="transparente">
+            <color rgba="0 0 0 0"/>
+        </material>
+    </visual>
+    <!--inertial>
+         <mass value="0.0001"/>
+         <inertia   ixx="0.0001"    ixy="0"         ixz="0"
+                                    iyy="0.0001"    iyz="0"
+                                                    izz="0.0001" />
+    </inertial-->
+</link>
+
+<joint name="footprint_base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 ${w_radius*2}" rpy="0 0 0"/>
+</joint>
+
+<link name="base_link">
+
+    <inertial>
+        <origin xyz="${0/1e3} 0 ${1.417/1000}" rpy="${pi/2} 0 ${pi/2}"/>
+        <mass value="5.771"/>
+        <inertia ixx="${207161.695/(1e6)}"
+                 ixy="${0}"                 iyy="${117325.409/(1e6)}"
+                 ixz="${0}"                 iyz="${0}"                  izz="${320415.187/(1e6)}"/>
+    </inertial>
+    <visual>
+        <origin xyz="${-300/1e3} 0 0" rpy="${pi/2} 0 ${pi/2}"/>
+        <geometry>
+            <mesh filename="package://hexapodo_description/meshes/chassis.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <material name="base_link_material">
+            <color rgba="${51/255} ${102/255} ${0/255} 1"/>
+        </material>
+    </visual>
+    <collision>
+        <origin xyz="${-300/1e3} 0 0" rpy="${pi/2} 0 ${pi/2}"/>
+        <geometry>
+            <mesh filename="package://hexapodo_description/meshes/chassis.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+    </collision>
+
+</link>
+
+<gazebo reference="base_link">
+    <material>Gazebo/Green</material>
+</gazebo>
+
+</robot>

@@ -1,0 +1,14 @@
+<!-- Si se quiere lanzar el control en posición desde el inicio, se debe 
+asignar a la variable del launch hexapodo_control el valor TRUE y en el 
+hexapodo_controller_interface el valor TRUE a la variable bool position_control -->
+
+<launch>
+
+    <node pkg="hexapodo_controller_interface" type="hexapodo_controller_interface" name="pata_1_controller_interface" args="pata1"/>
+    <node pkg="hexapodo_controller_interface" type="hexapodo_controller_interface" name="pata_2_controller_interface" args="pata2"/>
+    <node pkg="hexapodo_controller_interface" type="hexapodo_controller_interface" name="pata_3_controller_interface" args="pata3"/>
+    <node pkg="hexapodo_controller_interface" type="hexapodo_controller_interface" name="pata_4_controller_interface" args="pata4"/>
+    <node pkg="hexapodo_controller_interface" type="hexapodo_controller_interface" name="pata_5_controller_interface" args="pata5"/>
+    <node pkg="hexapodo_controller_interface" type="hexapodo_controller_interface" name="pata_6_controller_interface" args="pata6"/>
+
+</launch>

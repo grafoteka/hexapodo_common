@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<robot name="hexapodo" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<!--=====================================================================-->
+<!--        Definicion del robot hexapodo                                    -->
+<!--=====================================================================-->
+
+<!-- Archivos para incluir en el robot -->
+
+<xacro:include filename="$(find hexapodo_description)/urdf/pata_c.xacro"/>
+<xacro:include filename="$(find hexapodo_description)/urdf/base.xacro"/>
+<xacro:include filename="$(find hexapodo_description)/urdf/sensores/kinect_camera.xacro"/>
+<xacro:include filename="$(find hexapodo_description)/urdf/sensores/imu.xacro"/>
+<xacro:include filename="$(find hexapodo_description)/urdf/sensores/hokuyo_sensor.xacro"/>
+
+<!-- Declaracion del plugin gazebo_ros_control -->
+
+<gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <robotNamespace>/hexapodo</robotNamespace>
+    </plugin>
+</gazebo>
+
+<!-- Instanciacion de las patas dentro de la descripcion del robot -->
+
+<pata_c name="pata_1" parent_link="base_link" right="0">
+    <origin xyz="${-235/1000} ${233/1000} ${0/1000}" rpy="0 0 0"/>
+</pata_c>
+
+<pata_c name="pata_2" parent_link="base_link" right="1">
+    <origin xyz="${-235/1000} ${-233/1000} ${0/1000}" rpy="0 0 0"/>
+</pata_c>
+
+<pata_c name="pata_3" parent_link="base_link" right="0">
+    <origin xyz="${0/1000} ${289/1000} ${0/1000}" rpy="0 0 0"/>
+</pata_c>
+
+<pata_c name="pata_4" parent_link="base_link" right="1">
+    <origin xyz="${0/1000} ${-289/1000} ${0/1000}" rpy="0 0 0"/>
+</pata_c>
+
+<pata_c name="pata_5" parent_link="base_link" right="0">
+    <origin xyz="${235/1000} ${233/1000} ${0/1000}" rpy="0 0 0"/>
+</pata_c>
+
+<pata_c name="pata_6" parent_link="base_link" right="1">
+    <origin xyz="${235/1000} ${-233/1000} ${0/1000}" rpy="0 0 0"/>
+</pata_c>
+
+<!-- Instanciacion de la camara kinect dentro de la descripcion del robot -->
+
+<!--kinect_camera name="kin" parent_link="base_link">
+    <origin xyz="${300/1000} ${0/1000} ${0/1000}" rpy="0 0 0"/>
+</kinect_camera-->
+
+<!-- Instanciacion de la IMU dentro de la descripcion del robot -->
+
+<imu name="imu1" parent_link="base_link">
+    <origin xyz="${0/1000} ${0/1000} ${40/1000}" rpy="0 0 0"/>
+</imu>
+
+<hokuyo_sensor sensor_name="hokuyo" parent_name="base_link">
+    <origin xyz="${300/1000} 0 0" rpy="0 0 0"/>
+</hokuyo_sensor>
+
+</robot>
