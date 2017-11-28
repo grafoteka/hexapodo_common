@@ -1,1 +1,1 @@
-# hexapodo_common
+This is the common package for the hexapod robot.
