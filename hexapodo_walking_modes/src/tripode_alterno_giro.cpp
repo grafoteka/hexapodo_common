@@ -131,6 +131,7 @@ void lectura_posicion_patas(const sensor_msgs::JointStatePtr& msg)
 float linear_old = 0.0;
 float angular_old = 0.0;
 bool avance = false;
+bool giro = false;
 
 void lectura_cmd_vel(const geometry_msgs::Twist::ConstPtr& vel)
 {
@@ -156,6 +157,7 @@ void lectura_cmd_vel(const geometry_msgs::Twist::ConstPtr& vel)
 }
 
 float vel_command = 0.05; // m/s
+bool eStop = true;
 void lectura_joystick(const sensor_msgs::Joy::ConstPtr& joy)
 {
   if(joy->buttons[3] == 1)
@@ -173,6 +175,10 @@ void lectura_joystick(const sensor_msgs::Joy::ConstPtr& joy)
       ROS_INFO("velocidad en m/s: %.2f", vel_command);
     }
   }
+  if(joy->buttons[6] == 1)
+    eStop = false;
+  else
+    eStop = true;
 
   calculos((1/vel_command), alpha_robot, velocity_ground, velocity_flight);
 }
@@ -255,7 +261,6 @@ robot_modes standUp(std::vector<double> patas_consignas_vector)
 //        pata[i]->setPosition(-0.02);
         patas_posicion_origen.at(i) = true;
         pata[i]->setVelocity(0.0);
-        pata[i]->setPosition(0.0);
       }
 }
 
@@ -368,7 +373,7 @@ bool tripodOneConsignaAlcanzada  = false;
 bool tripodTwoConsignaAlcanzada  = false;
 std::vector<bool> tripodOnePatasPosicionAlcanzada = {false, false, false};
 
-robot_modes alternTripodWalking(float leg_ground_velocity, float leg_flight_velocity, float alpha, bool exit)
+robot_modes alternTripodWalking(float leg_ground_velocity, float leg_flight_velocity, float alpha)
 {
   float alpha_rads = (alpha / 2) * PI / 180.0;
   std::vector<int> tripod_one = {0, 3, 4};
@@ -483,7 +488,7 @@ robot_modes alternTripodWalking(float leg_ground_velocity, float leg_flight_velo
       ROS_INFO("LAND");
       tripod_one_angulo = alpha_rads;
       tripod_two_angulo = 2 * PI - alpha_rads;
-      moveLegs(tripod_one, tripod_two, tripod_one_angulo, tripod_two_angulo, !exit, leg_ground_velocity, leg_flight_velocity);
+      moveLegs(tripod_one, tripod_two, tripod_one_angulo, tripod_two_angulo, false, leg_ground_velocity, leg_flight_velocity);
 
       tripodOneStateActual = transition;
       tripodOneStateLast = land;
@@ -501,7 +506,7 @@ robot_modes alternTripodWalking(float leg_ground_velocity, float leg_flight_velo
       ROS_INFO("FLIGHT");
       tripod_one_angulo = 2 * PI - alpha_rads;
       tripod_two_angulo = alpha_rads;
-      moveLegs(tripod_one, tripod_two, tripod_one_angulo, tripod_two_angulo, !exit, leg_flight_velocity, leg_ground_velocity);
+      moveLegs(tripod_one, tripod_two, tripod_one_angulo, tripod_two_angulo, false, leg_flight_velocity, leg_ground_velocity);
       tripodOneStateActual = transition;
       tripodOneStateLast = flight;
       tripodOneStateNext = land;
@@ -565,6 +570,9 @@ void movimiento_salida()
 }
 }
 
+void movimiento(){
+  if(giro_)
+}
 
 //####################################################################################
 //  Programa principal
@@ -584,7 +592,7 @@ int main(int argc, char **argv)
 
   //Suscripción al tópico del JointStates y cmd_vel
   //JointStates entrega el estado de cada articulacion
-  ros::Subscriber sub = node_sub.subscribe("/hexapodo/joint_states", 1, lectura_posicion_patas);
+  ros::Subscriber sub = node_sub.subscribe("/rhex/joint_states", 1, lectura_posicion_patas);
   //cmd_vel da los valores de velocidad lineal y angular
   ros::Subscriber velocity = node_sub.subscribe("/cmd_vel", 1, lectura_cmd_vel);
   ros::Subscriber joystick = node_sub.subscribe("/joy", 1, lectura_joystick);
@@ -622,27 +630,6 @@ int main(int argc, char **argv)
   //  Rutinas de una sola ejecucion
   //---------------------------------------------------------------------------------
 
-//  ROS_INFO("%d", patas_joint_state.position.size());
-
-  for(int i = 0; i < 6; i++)
-  {
-    pata[i]->setVelocity(0);
-    //patas_pos.at(i) = pata[i]->getPos();
-    //ROS_INFO("pata %d -> posicion %.2f", i, pata[i]->getPos());
-  }
-
-  //float vel_robot = 0.05; float alpha_robot = 60;
-
-  //calculos((1/vel_command), alpha_robot, velocity_ground, velocity_flight);
-  /*
-  return 0;
-  ROS_INFO("Asigno velocidades = 2.5");
-  for (int i = 0; i < 6; i++)
-  {
-      pata[i]->setVelocity(2.5);  //Giro en sentido positivo. Incrementa la posición del encoder
-      ROS_INFO("pata %d -> velocidad %.2f -> posicion %.2f", i, pata[i]->getVel(), pata[i]->getPos() );
-  }
-  */
 
   //---------------------------------------------------------------------------------
   //  Bucle del programa principal
@@ -653,6 +640,8 @@ int main(int argc, char **argv)
 
 
   while(ros::ok()){
+    if(!eStop)
+      movimiento();
 
     switch (robot_modes_actual) {
       case ground:
@@ -675,7 +664,7 @@ int main(int argc, char **argv)
       case alternTripod:
         ROS_INFO("Estoy en alternTripod");
         //tripodOneStateNext;
-        alternTripodWalking(velocity_ground, velocity_flight, alpha_robot, avance);
+        alternTripodWalking(velocity_ground, velocity_flight, alpha_robot);
         // Si se para el avance
 
         if (!avance && !estaticas)

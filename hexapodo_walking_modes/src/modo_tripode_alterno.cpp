@@ -50,6 +50,7 @@ enum EstadoMov {REPOSO, POSICIONAMIENTO, MOV_TRIPODE_1, MOV_TRIPODE_2};
 //---------------------------------------------------------------------------
 
 //Objetos de cada una de las patas
+
 PataC *pata[6];
 
 //Declaracion de la variable de estado del movimiento

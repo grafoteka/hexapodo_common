@@ -5,7 +5,7 @@ project(hexapodo_walking_modes)
  add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED
-	roscpp
+  roscpp
   std_msgs
   hexapodo_controller_interface
 )
@@ -30,13 +30,16 @@ include_directories(
 )
 
 ## Declare a C++ executable
-add_executable(tripode_alterno src/aleatorio_joystick.cpp)
+add_executable(tripode_alterno_joystick src/aleatorio_joystick_kinematic.cpp)
+add_executable(tripode_alterno_me src/tripode_alterno.cpp)
 add_executable(todas_juntas src/modo_todas_juntas.cpp)
 
-add_dependencies(tripode_alterno ${catkin_EXPORTED_TARGETS})
+add_dependencies(tripode_alterno_joystick ${catkin_EXPORTED_TARGETS})
+add_dependencies(tripode_alterno_me ${catkin_EXPORTED_TARGETS})
 add_dependencies(todas_juntas ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(tripode_alterno ${catkin_LIBRARIES})
+target_link_libraries(tripode_alterno_joystick ${catkin_LIBRARIES})
+target_link_libraries(tripode_alterno_me ${catkin_LIBRARIES})
 target_link_libraries(todas_juntas ${catkin_LIBRARIES})
 
 #Add custom (non compiling) targets so launch scripts and python files show up in QT Creator's project view.

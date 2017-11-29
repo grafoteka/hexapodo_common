@@ -45,10 +45,6 @@ std::vector<bool> estados_mef;
 // Vector para la posicion de las patas
 std::vector<float> patas_posicion_actual(6);
 
-// Estados de movimiento: avance, giro, giro+avance
-enum robot_movement {forward, turn_left, turn_right, forward_left, forward_right, stop};
-robot_movement robot_movement_actual;
-
 // Estados del robot
 enum robot_modes { ground, stand_by, altern_tripod};
 robot_modes robot_modes_actual;
@@ -131,16 +127,14 @@ float velocity = 0.1; // m/s
 float vel_command;
 float linear_old = 0.0;
 float angular_old = 0.0;
-float angular_actual = 0.0;
-float linear_actual = 0.0;
 
 void cmd_vel_callback(const geometry_msgs::Twist::ConstPtr& vel)
 {
   //ROS_INFO("Lectura de Joystick");
   //Since vel is a const pointer you cannot edit the values inside but have to use the copy new_vel.
   new_vel = *vel;
-  linear_actual = vel->linear.x;
-  angular_actual = vel->angular.z;
+  float linear_actual = vel->linear.x;
+  float angular_actual = vel->angular.z;
 
   if(linear_actual > 0)
     avance = true;
@@ -160,7 +154,6 @@ void cmd_vel_callback(const geometry_msgs::Twist::ConstPtr& vel)
 /******************************************************
  * Joystick.
  ******************************************************/
-bool eStop = true;
 
 void joystick_callback(const sensor_msgs::Joy::ConstPtr& joy)
 {
@@ -185,10 +178,6 @@ void joystick_callback(const sensor_msgs::Joy::ConstPtr& joy)
 //      ROS_INFO("velocidad en m/s: %.2f", velocity);
     }
   }
-  if(joy->buttons[6] == 1)
-    eStop = false;
-  else
-    eStop = true;
 
   calculos((1/velocity), phase_one_velocity, phase_two_velocity);
 }
@@ -251,213 +240,42 @@ robot_modes stand_up(std::vector<double> patas_consignas_vector)
   //vector con la consigna de posicion de las patas.
   // En este caso, las patas las queremos situar en la posición absoluta 0.0
   //std::vector<double> patas_consignas_vector = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-//  int posicion_origen_int = posicion_origen; //ROS_INFO("posicion origen = %d", posicion_origen_int);
-//  int patas_lectura_flag_int = patas_lectura_flag; ROS_INFO("posicion origen = %d -- patas_lectura_flag = %d", posicion_origen_int, patas_lectura_flag_int);
+
 
   // Solo se entra en el bucle si se ha leido, al menos una vez el joint_states y el flag de que el robot este
   // en la posicion de origen no se ha activado.
+
+  //  int posicion_origen_int = posicion_origen; //ROS_INFO("posicion origen = %d", posicion_origen_int);
+  //  int patas_lectura_flag_int = patas_lectura_flag; ROS_INFO("posicion origen = %d -- patas_lectura_flag = %d", posicion_origen_int, patas_lectura_flag_int);
+
   if(!posicion_origen && patas_lectura_flag)
   {
-//    ROS_INFO("Dentro del while");
-    for(int i = 0; i < 6; i++)
-    {
-      // Si la pata no se encuentra en la posicion 0.0
-      // se calcula el error y con ello la velocidad en un controlador P.
-      // La velocidad es negativa para que las patas giren en sentido antihorario. Pero es el giro correcto.
-      if(patas_posicion_origen.at(i) == false){
-        float error = (patas_posicion_actual.at(i) - patas_consignas_vector.at(i));
-        float velocity = -2.5 * error;
-//        ROS_INFO("joint dentro del while %d position  %.2f", i, patas_posicion_actual[i]);
-        pata[i]->setVelocity(velocity);
+    // Aqui vamos a la clase con la funcion stand_up
+    // esta funcion devuelve un booleano que indica si se ha levantado el robot o no
+    bool flag = stand_up(patas_consignas_vector, patas_posicion_actual);
 
-      if(abs(velocity) < 0.1)
-      {
-//        ROS_INFO("Estoy en el 0");
-//        pata[i]->setPosition(-0.02);
-        patas_posicion_origen.at(i) = true;
-        pata[i]->setVelocity(0.0);
-      }
+    if(flag)
+      return (stand_by);
+    else
+      return(origin); //este estado es el original del programa, por lo que volvería a entrar en esta funcion desde el main;
+   }
 }
 
-      if(std::all_of(patas_posicion_origen.begin(), patas_posicion_origen.end(), [](bool posicion_origen) {return posicion_origen;})){
-        ROS_INFO("Posicion origen = TRUE");
-//        posicion_origen = true;float velocity_phase_1, velocity_flight;
-        for(int i = 0; i < 6; i++)
-        {
-          patas_posicion_origen.at(i) = false;
-        }
-        return (stand_by);
-      }
-    }
-  }
-}
 
 /*********************************************
     MOVIMIENTO DE LAS PATAS
 **********************************************/
 
-// Fases
+// Variables para contar las fases y sin son pares o impares
 int phase = 0;
 float phase_mod = 0;
 
-// Angulos
-float total_angle = 45;
-float total_angle_rads = total_angle * PI / 180;
-float take_off_angle = total_angle_rads / 2;
-float take_land_angle = 2 * PI - (total_angle_rads / 2);
-
-// Patas del robot
-const int tripods_quantity = 2; const int tripods_length = 3;
-std::vector<int> tripod_one = {0, 3, 4};
-std::vector<int> tripod_two = {1, 2, 5};
-//Matriz de que las patas han llegado a su consigna
-static std::vector<bool> leg_in_position_vector = {false, false, false, false, false, false};
-static bool leg_in_position[tripods_quantity][tripods_length] = {{false, false, false},{false, false, false}};
-
-//Matriz de la posicion de las patas del robot
-int robot_legs_configuration[tripods_quantity][tripods_length] = {{tripod_one.at(0), tripod_one.at(1), tripod_one.at(2)}, {tripod_two.at(0), tripod_two.at(1), tripod_two.at(2)}};
-
-//for(int i = 0; i < tripods_quantity; i++)
-//{
-//    for(int j = 0; j < tripods_length; j++)
-//    {
-//        if(i == 0)
-//            robot_legs_configuration[i][j] = tripod_one.at(j);
-//        else
-//            robot_legs_configuration[i][j] = tripod_two.at(j);
-//    }
-//}
-
 bool move_legs(bool start_movement)
 {
-//  ROS_INFO("Move legs");
+  // Llamada a la funcion de la clases que mueve las patas
+  bool flag = stand_up(start_movement*);
 
-//    ROS_INFO("Take OFF angle = %.2f --- Take LAND angle = %.2f", take_off_angle, take_land_angle);
-
-//    int start_movement_int = start_movement;
-//    ROS_INFO("Start movement = %d", start_movement_int);
-    /**** INICIO DEL MOVIMIENTO DE LAS PATAS SI NO SE ENCUENTRAN YA EN POSICION ****/
-    if(start_movement)
-    {
-//      ROS_INFO("%.2f", phase_one_velocity);
-        /* SET VELOCITIES */
-        for(int i = 0; i < tripods_quantity; i++)
-        {
-            for(int j = 0; j < tripods_length; j++)
-            {
-                if (leg_in_position[i][j] == false)
-                {
-                    if(phase_mod == 0)
-                    {
-                        //Si estamos en el primer ciclo, el tripode 1 va por el suelo y el tripode 2 por el aire
-//                      ROS_INFO("pata %d - velocidad %.2f", robot_legs_configuration[0][j], phase_one_velocity);
-//                      ROS_INFO("pata %d - velocidad %.2f", robot_legs_configuration[1][j], phase_two_velocity);
-                      if(phase == 0)
-                      {
-                        ROS_INFO("Fase inicial");
-                        pata[robot_legs_configuration[0][j]]->setVelocity(phase_one_velocity / 2);
-                        pata[robot_legs_configuration[1][j]]->setVelocity(phase_two_velocity);
-                      }
-
-                      else{
-                        ROS_INFO("Fase 1");
-                        pata[robot_legs_configuration[0][j]]->setVelocity(phase_one_velocity);
-                        pata[robot_legs_configuration[1][j]]->setVelocity(phase_two_velocity);
-                      }
-                    }
-                    else
-                    {
-                        ROS_INFO("Fase 2");
-                        pata[robot_legs_configuration[0][j]]->setVelocity(phase_two_velocity);
-                        pata[robot_legs_configuration[1][j]]->setVelocity(phase_one_velocity);
-
-                    }
-                }
-            }
-        }
-//        ROS_INFO("Fase = %.2f -- Velocidad fase 1 = %.2f -- Velocidad fase 2 = %.2f", phase_mod, phase_one_velocity, phase_two_velocity);
-    }
-
-
-    /**** INICIO DE LA COMPROBACION DE QUE LAS PATAS YA SE ENCUENTRAN EN POSICION ****/
-    else
-    {
-//      ROS_INFO("ELSE");
-        for(int i = 0; i < tripods_quantity; i++)
-        {
-            for(int j = 0; j < tripods_length; j++)
-            {
-                //float tripod_one_angle, tripod_two_angle;
-                float distance;
-                float leg_actual_pos = fmod(patas_posicion_actual.at(robot_legs_configuration[i][j]), 2 * PI);
-                static float angle;
-//                ROS_INFO("phase module = %d", phase_mod);
-                if(phase_mod == 0)
-                {
-                    if(i == 0)
-                        angle = take_off_angle; //Angulo para tripode_1 y phase_0
-
-                    else //(i == 1)
-                        angle = take_land_angle;    //Angulo para el tripode_1 y phase_1
-//                    ROS_INFO("angulo %.2f", angle);
-                }
-                else
-                {
-                    if(i == 0)
-                        angle = take_land_angle;
-                    else //(i = 1)
-                        angle = take_off_angle;
-                }
-
-                distance = fabs(angle - leg_actual_pos);
-//                ROS_INFO("Fase %.2f -- Pata %d -- Posicion %.2f -- Error %.2f -- Velocidad %.2f", phase_mod, robot_legs_configuration[i][j], leg_actual_pos, distance, pata[robot_legs_configuration[i][j]]->getVel());
-                if(distance < 0.07)
-                {
-//                  ROS_INFO("Distancia correcta para la pata %d", robot_legs_configuration[i][j]);
-                    leg_in_position[i][j] = true;
-                    pata[robot_legs_configuration[i][j]]->setVelocity(0.0);
-
-                    // Escribimos en el vector de posiciones que esa pata tambien esta en posicion
-                    if(i == 0)
-                        leg_in_position_vector.at(j) = true;
-                    else
-                        leg_in_position_vector.at(j+3) = true;
-                }
-            }
-        }
-//        ROS_INFO("FIN de un un ciclo");
-    }
-
-    /* COMPROBACION DE QUE LOS TRIPODES ESTAN EN LA POSICION DESEADA */
-    // Si estan todas las patas en posicion, entonces se resetea el estado de sus valores
-    // Y tambien se devuelve el estado de la variable FLAG de la maquina de estados
-    bool position_reached = std::all_of(leg_in_position_vector.begin(), leg_in_position_vector.end(), [](bool reached) {return reached;});
-
-    if(position_reached)
-//    if(leg_in_position[1][0] && leg_in_position[1][1] && leg_in_position[1][2])
-    {
-      ROS_INFO("Se ha alcanzado la consigna de todas las patas");
-        for(int i = 0; i < tripods_quantity; i++)
-        {
-            for(int j = 0; j < tripods_length; j++)
-            {
-                leg_in_position[i][j] = false;
-                pata[robot_legs_configuration[i][j]]->setVelocity(0.0);
-
-                if(i == 0)
-                    leg_in_position_vector.at(j) = false;
-                else
-                    leg_in_position_vector.at(j+3) = false;
-        }
-      }
-        phase++;
-        phase_mod = phase % 2;
-        ROS_INFO("phase = %d -- module = %.2f", phase, phase_mod);
-
-        return true;
-    }
-    else
-        return false;
+  return flag;
 
 }
 
@@ -583,31 +401,6 @@ bool altern_tripod_walking(bool exit)
     }
 }
 
-robot_movement movimiento(){
-  if(angular_actual == 0)
-  {
-    if(linear_actual > 0)
-      return forward;
-    else
-      return stop;
-  }
-  else if(angular_actual > 0)
-  {
-    if(linear_actual > 0)
-      return forward_right;
-    else
-      return turn_right;
-  }
-  else if(angular_actual < 0)
-  {
-    if(linear_actual > 0)
-      return forward_left;
-    else
-      return turn_left;
-  }
-  else
-    return stop;
-}
 
 //####################################################################################
 //  Programa principal
@@ -660,20 +453,6 @@ int main(int argc, char **argv)
     bool avance_old;
 
     while(ros::ok()){
-      if(!eStop)
-        robot_movement_actual = movimiento();
-
-      switch (robot_modes_actual) {
-
-      case stop:
-
-        break;
-
-      case forward:
-
-        break;
-
-      }
 
     switch (robot_modes_actual) {
       case ground:
