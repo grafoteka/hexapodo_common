@@ -9,6 +9,18 @@
 //               un robot rhex y asi establecer su funcionalidad
 //====================================================================================
 
+//====================================================================================
+//  Autor: Jorge De Leon Rivas
+//  mail: jorge.deleon@upm.es
+//  date: 11/december/2017
+//  version: 2.0
+//  Archivo: CLeg.h
+//  Descripcion: Archivo de cabezera para describir la funcionalidad de una pata c de
+//               un robot rhex y asi establecer su funcionalidad.
+//               Se añade el flag de lectura del joint_state para evitar que en la 
+//               primera lectura aparezcan numeros aleatorios.
+//====================================================================================
+
 
 //----------------------------------------------------------------------------
 //  Includes
@@ -38,6 +50,7 @@ class CLeg{
     //  Variables miembro de la clase
     //------------------------------------------------------------------------
 
+    
     //Campo con el numero de la pata que representa
     unsigned int num_pata;
 
@@ -98,7 +111,9 @@ public:
     //------------------------------------------------------------------------
     //  Constructor de la clase
     //------------------------------------------------------------------------
-
+    // Bandera que indica que se ha leido el joint_states al menos una vez
+    bool joint_state_read_flag;
+        
     //Constructor por defecto -- no hay
     //CLeg();
 

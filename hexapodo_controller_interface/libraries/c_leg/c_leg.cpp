@@ -51,7 +51,13 @@ void CLeg::parseJointState(const sensor_msgs::JointState &message){
     }
     vel = message.velocity[num_pata-1];
     eff = message.effort[num_pata-1];
-    return;
+
+    joint_state_read_flag = true;
+
+    if(joint_state_read_flag){
+//      ROS_INFO("He leido el joint_state por primera vez");
+      return;
+    }
 }
 
 //Metodo que envia una request de comando hacia el controller interface
@@ -97,6 +103,9 @@ bool CLeg::requestCommand (float value, bool position_command){
 //Constructor de la clase
 CLeg::CLeg(unsigned int numero_pata, ros::NodeHandle &n){
 
+    //Se inicializa el valor de la bandera de lectura del joint_state
+    joint_state_read_flag = false;
+
     //Se asigna el handler del nodo
     nh = &n;
 
@@ -115,7 +124,7 @@ CLeg::CLeg(unsigned int numero_pata, ros::NodeHandle &n){
 
     ros::spinOnce();
 
-    return;
+      return;
 }
 
 //------------------------------------------------------------------------

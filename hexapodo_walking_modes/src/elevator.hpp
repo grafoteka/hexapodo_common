@@ -1,5 +1,5 @@
-#ifndef HEXAPOD_FSM_HPP_INCLUDED
-#define HEXAPOD_FSM_HPP_INCLUDED
+#ifndef ELEVATOR_HPP_INCLUDED
+#define ELEVATOR_HPP_INCLUDED
 
 #include <tinyfsm/tinyfsm.hpp>
 
@@ -8,14 +8,23 @@
 // Event declarations
 //
 
-struct change_mode : tinyfsm::Event { };
+struct FloorEvent : tinyfsm::Event
+{
+  int floor;
+};
+
+struct Call        : FloorEvent { };
+struct FloorSensor : FloorEvent { };
+struct Alarm       : tinyfsm::Event { };
+
+
 
 // ----------------------------------------------------------------------------
 // Elevator (FSM base class) declaration
 //
 
-class hexapod_modes
-: public tinyfsm::Fsm<hexapod_modes>
+class Elevator
+: public tinyfsm::Fsm<Elevator>
 {
   /* NOTE: react(), entry() and exit() functions need to be accessible
    * from tinyfsm::Fsm class. You might as well declare friendship to
@@ -28,16 +37,17 @@ public:
   /* default reaction for unhandled events */
   void react(tinyfsm::Event const &) { };
 
-  void react(change_mode const &);
+  virtual void react(Call        const &);
+  virtual void react(FloorSensor const &);
+  void         react(Alarm       const &);
 
-  void entry(void) { };  /* entry actions in some states */
-  void exit(void)  { };  /* no exit actions at all */
+  virtual void entry(void) { };  /* entry actions in some states */
+  void         exit(void)  { };  /* no exit actions at all */
 
 protected:
 
-  static int state_current;
-  static int state_dest;
-  static int state_last;
+  static int current_floor;
+  static int dest_floor;
 };
 
 
