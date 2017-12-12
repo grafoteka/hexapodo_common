@@ -25,7 +25,7 @@ private:
 
 public:
   stand_by(); // Constructor
-  void move_legs();
+  void get_position();
 };
 
 #endif // STAND_BY_H

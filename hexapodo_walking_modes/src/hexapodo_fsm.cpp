@@ -108,7 +108,7 @@ int main(int argc, char **argv)
     // Stand by
     case 0:
         ROS_INFO("Modo Stand By");
-        hexapodo_stand_by.move_legs();
+        hexapodo_stand_by.get_position();
 //      operation_mode_actual = stand_by;
       break;
 

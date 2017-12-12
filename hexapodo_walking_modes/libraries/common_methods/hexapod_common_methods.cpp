@@ -1,7 +1,6 @@
 #include <common_methods/hexapod_common_methods.h>
 #include <c_leg/c_leg.h>
 #include <ros/ros.h>
-#include <sensor_msgs/JointState.h>
 
 /******************************************************
  * Setup patas
