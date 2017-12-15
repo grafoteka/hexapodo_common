@@ -17,7 +17,7 @@ find_package(catkin REQUIRED
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES hexapod_common_methods stand_by
+  LIBRARIES hexapod_common_methods stand_by altern_tripod
   CATKIN_DEPENDS roscpp std_msgs hexapodo_controller_interface
 )
 
@@ -37,24 +37,31 @@ include_directories(
 #add_library(altern_tripod_fem libraries/altern_tripod_fem/altern_tripod_fem.cpp)
 add_library(common_methods libraries/common_methods/hexapod_common_methods.cpp)
 add_library(stand_by libraries/stand_by/stand_by.cpp)
+add_library(altern_tripod libraries/altern_tripod/altern_tripod.cpp)
 
 ## Declare a C++ executable
 #add_executable(tripode_alterno_joystick src/aleatorio_joystick_kinematic.cpp)
 add_executable(hexapodo_fsm src/hexapodo_fsm.cpp)
+add_executable(hexapodo_fsm_listener src/hexapodo_fsm_listener.cpp)
 #add_executable(todas_juntas src/modo_todas_juntas.cpp)
 
 #add_dependencies(tripode_alterno_joystick ${catkin_EXPORTED_TARGETS})
-add_dependencies(hexapodo_fsm stand_by ${catkin_EXPORTED_TARGETS})
+#add_dependencies(hexapodo_fsm stand_by altern_tripod ${catkin_EXPORTED_TARGETS})
+add_dependencies(hexapodo_fsm ${catkin_EXPORTED_TARGETS})
+add_dependencies(hexapodo_fsm_listener stand_by altern_tripod ${catkin_EXPORTED_TARGETS})
 #add_dependencies(todas_juntas ${catkin_EXPORTED_TARGETS})
 
 #target_link_libraries(tripode_alterno_joystick ${catkin_LIBRARIES})
-target_link_libraries(hexapodo_fsm stand_by ${catkin_LIBRARIES})
+target_link_libraries(hexapodo_fsm ${catkin_LIBRARIES})
+#target_link_libraries(hexapodo_fsm stand_by altern_tripod ${catkin_LIBRARIES})
+target_link_libraries(hexapodo_fsm_listener stand_by altern_tripod ${catkin_LIBRARIES})
 target_link_libraries(stand_by common_methods ${catkin_LIBRARIES})
-target_link_libraries(common_methods ${catkin_LIBRARIES})
+target_link_libraries(altern_tripod common_methods ${catkin_LIBRARIES})
+
+#target_link_libraries(altern_tripod common_methods ${catkin_LIBRARIES})
+#target_link_libraries(stand_by common_methods ${catkin_LIBRARIES})
+#target_link_libraries(common_methods ${catkin_LIBRARIES})
 #target_link_libraries(todas_juntas ${catkin_LIBRARIES})
 
-#############
-## Install ##
-#############
 
 

@@ -14,9 +14,9 @@ class altern_tripod_fem
         bool stand_up_position; // Flag que devuelve si el robot esta erguido -- posicion despues de iniciarse tumbado en el suelo
         std::vector<bool> legs_origin_position; // Vector que indica que las patas están en la posicion de erguido -- 0 grados == TRUE
 
-		bool flag;	//flag que devuelve que se ha terminado una transicion
-		int groups_quantity; // cantidad de grupos de patas
-		int groups_length;	// longitud de los grupos de patas
+	bool flag;	//flag que devuelve que se ha terminado una transicion
+	int groups_quantity; // cantidad de grupos de patas
+	int groups_length;	// longitud de los grupos de patas
         std::vector<int> tripod_one;	// Vector con las patas del primer tripode
         std::vector<int> tripod_two;	// Vector con las patas del segundo tripode
         std::vector<bool> leg_in_position_vector; // Vector que confirma que todas las patas estan en posicion
@@ -27,17 +27,17 @@ class altern_tripod_fem
         std::vector<float> legs_actual_position; // Vector que almacena la posicion actual de cada pata -- su joint
         bool legs_joint_state_flag;  // Bandera que indica que si es TRUE se ha leido al menos una vez el joint_states
 
-		// Fases de los ciclos
-		int phase;
-		float phase_module;
+        // Fases de los ciclos
+        int phase;
+        float phase_module;
 
-		// Angulos de posiciones de las patas
+	// Angulos de posiciones de las patas
         float total_angle_degrees;
-		float total_angle_rads;
-		float take_off_angle;	// Angulo de despegue [rads]
-		float take_land_angle;	// Angulo de aterrizaje [rads]
+	float total_angle_rads;
+	float take_off_angle;	// Angulo de despegue [rads]
+	float take_land_angle;	// Angulo de aterrizaje [rads]
 
-		// Velocidades
+	// Velocidades
         float phase_one_vel;	// Velocidad de la fase suelo [rads/s]
         float phase_two_vel;	// Velocidad de la fase vuelo [rads/s]
         float phase_one_vel_old;
@@ -51,9 +51,9 @@ class altern_tripod_fem
         ros::NodeHandle nh;  //Node handle
         ros::Subscriber joint_state_subs; //Joint state subscriber
 
-		/*
-		/* METODOS
-		*/
+	/*
+	/* METODOS
+	*/
 
         // void begin();	// Funcion para inicializar los parametros
 		bool move_legs(bool); // Funcion para mover las patas segun la consigna de la fem	

@@ -3,12 +3,24 @@
 
 #include <c_leg/c_leg.h>
 #include <ros/ros.h>
+#include <geometry_msgs/Twist.h>
+#include <sensor_msgs/Joy.h>
 
 //#include <sensor_msgs/JointState.h>
 
 class common_methods
 {
 private:
+
+  // Metodo velocidades
+  float velocity_;
+  float velocity_robot_;
+
+  // Metodo calculo velocidades
+  void velocity_calcule();
+  float phase_one_vel_;
+  float phase_two_vel_;
+  float total_angle_degrees_ = 60;
 
 #define ROBOT_LEG_NUM 6 // Numero de patas del robot
 
@@ -17,10 +29,16 @@ private:
   void delete_legs(); // Eliminacion de las patas
 
 
-
-
   // ROS
   ros::NodeHandle nh;  //Node handle
+  ros::Subscriber velocity_subs;  // Subscriptor al twist_cmd_vel
+  ros::Subscriber joystick_subs;  // Subscriptor al /joy
+
+  // Callbacks
+  void init_subscribers();  // Metodo que inicia los subscriber
+  void cmd_vel_callback(const geometry_msgs::Twist::ConstPtr& vel); // Callback para el twist del joystick
+  void joystick_callback(const sensor_msgs::Joy::ConstPtr& joy);  // Callback para los botones del joystick
+
 
 public:
 
@@ -36,8 +54,12 @@ public:
   bool legs_readed();
   bool legs_readed_flag;
 
-  int npatas() const;
-  void setNpatas(int npatas);
+  float total_angle_rads_ = total_angle_degrees_* M_PI / 180;
+
+  bool eStop_;
+  bool exit_button_;
+
+
 };
 
 #endif // COMMON_METHODS_H

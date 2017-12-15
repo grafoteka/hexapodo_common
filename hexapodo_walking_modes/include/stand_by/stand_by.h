@@ -13,19 +13,29 @@ private:
   float total_angle_degrees;
   float total_angle_rads;
 
-  std::vector<int> tripod_one;
-  std::vector<int> tripod_two;
+  std::vector<int> tripod_one_;
+  std::vector<int> tripod_two_;
+  
+  // Variable para llamar a la funcion de set_position con la posicion adecuada de cada tripode
+//  float tripod_one_position_;
+//  float tripod_two_position_;
 
-  // Variable que indica si viene desde el suelo o desde otro estado
+  // Variable que indica si viene desde el suelo o desdefloat tripod_one_desired_position, float tripod_two_desired_position otro estado
   // TRUE = estado anterior = origen (en el suelo)
   // FALSE = estado anterior = otro estado (ya esta en pie)
-  bool grounded;
+  bool grounded_;
 
-  common_methods hexapodo_stand_by;
+  bool set_position(float, float);
+  void stand_up();
+  void get_down();
+
+  common_methods hexapodo_common_methods;
 
 public:
   stand_by(); // Constructor
-  void get_position();
+  bool get_position();
+
+  void stand_by_fsm();
 };
 
 #endif // STAND_BY_H
