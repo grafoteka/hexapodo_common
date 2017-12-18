@@ -26,16 +26,21 @@ private:
   bool grounded_;
 
   bool set_position(float, float);
-  void stand_up();
+
   void get_down();
 
   common_methods hexapodo_common_methods;
 
 public:
   stand_by(); // Constructor
-  bool get_position();
 
-  void stand_by_fsm();
+  void stand_by_fsm();  // Maquina de estados para levantar o poner en el suelo el robot
+
+  // Esta funcion la hago publica para poder llamarla desde otros modos en caso de que no
+  // se encuentre el robot en la posicion adecuada.
+  void stand_up();  // Funcion para levantar el robot y dejarlo en tripode alterno
+
+  bool getGrounded() const;
 };
 
 #endif // STAND_BY_H

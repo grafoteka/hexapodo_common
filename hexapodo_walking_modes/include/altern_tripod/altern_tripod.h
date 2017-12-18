@@ -20,8 +20,11 @@ class altern_tripod : public common_methods
 {
 private:
 
-  common_methods hexapodo_altern_tripod;
-  stand_by hexapodo_stand_by;
+  // Variable que chequea si el robot se encuentra en stand_by
+  bool legs_in_position_;
+
+  common_methods hexapod_common_methods_;
+  stand_by hexapod_stand_by_;
 
   // vectores de las patas
   std::vector<int> tripod_one_ = {0, 3, 4};
@@ -32,13 +35,11 @@ private:
 
   bool move_legs(bool); // Funcion que mueve las patas
 
-  bool check_tripod();
-
   bool fsm(bool); // Funcion que es la maquina virtual de las fases
 
 public:
   altern_tripod();  // Constructor
-  void init(bool);
+  void init();
 
 };
 

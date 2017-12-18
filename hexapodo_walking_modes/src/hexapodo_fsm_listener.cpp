@@ -116,6 +116,9 @@ int main(int argc, char **argv)
         ROS_INFO("Altern tripod");
         mode_last = mode_actual;
       }
+
+      // Llamamos a la fsm de altern_tripod, desde ella comprobamos la posicion de los tripodes
+      hexapod_altern_tripod.init();
       break;
 
     case tetrapod_mode:
@@ -124,7 +127,6 @@ int main(int argc, char **argv)
         ROS_INFO("Tetrapod");
         mode_last = mode_actual;
       }
-//      ROS_INFO("Tetrapod");
       break;
 
     case wave_mode:
@@ -133,7 +135,6 @@ int main(int argc, char **argv)
         ROS_INFO("Wave");
         mode_last = mode_actual;
       }
-//      ROS_INFO("Wave");
       break;
 
     case ground_mode:
@@ -142,12 +143,11 @@ int main(int argc, char **argv)
         ROS_INFO("Ground");
         mode_last = mode_actual;
       }
-//      ROS_INFO("Ground");
       hexapod_stand_by.stand_by_fsm();
       break;
 
     case error_mode:
-//      ROS_INFO("Error");
+      ROS_INFO("Error");
       break;
 
     }

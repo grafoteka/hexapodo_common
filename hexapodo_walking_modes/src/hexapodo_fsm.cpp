@@ -145,9 +145,9 @@ int main(int argc, char **argv)
       msg.data = "ground";
       break;
 
-//    default:
-//      ROS_INFO("Default");
-//      msg.data = "default";
+    default:
+      ROS_INFO("Default");
+      msg.data = "default";
     }
   }
 
