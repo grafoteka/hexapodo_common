@@ -11,8 +11,13 @@
 class common_methods
 {
 private:
+  // Variables para
 
   // Metodo velocidades
+  bool advance_;
+  bool reverse_;
+  bool turn_left_;
+  bool turn_right_;
   float velocity_;
   float velocity_robot_;
 
@@ -20,7 +25,7 @@ private:
   void velocity_calcule();
   float phase_one_vel_;
   float phase_two_vel_;
-  float total_angle_degrees_ = 60;
+  float total_angle_degrees_ = 45;
 
 #define ROBOT_LEG_NUM 6 // Numero de patas del robot
 
@@ -58,6 +63,16 @@ public:
 
   bool eStop_;
   bool exit_button_;
+
+
+  // Getters
+  bool advance() const;
+  bool reverse() const;
+  bool turn_left() const;
+  bool turn_right() const;
+
+  float phase_one_vel() const;
+  float phase_two_vel() const;
 
 
 };

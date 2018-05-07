@@ -1,6 +1,38 @@
 #include <common_methods/hexapod_common_methods.h>
 
 /******************************************************
+ * Getters
+ ******************************************************/
+float common_methods::phase_two_vel() const
+{
+  return phase_two_vel_;
+}
+
+float common_methods::phase_one_vel() const
+{
+  return phase_one_vel_;
+}
+
+bool common_methods::advance() const
+{
+  return advance_;
+}
+
+bool common_methods::reverse() const
+{
+  return reverse_;
+}
+
+bool common_methods::turn_left() const
+{
+  return turn_left_;
+}
+
+bool common_methods::turn_right() const
+{
+  return turn_right_;
+}
+/******************************************************
  * Setup patas
  ******************************************************/
 //Funcion setup de las patas
@@ -50,10 +82,9 @@ void common_methods::velocity_calcule()
   {
     phase_one_vel_old = phase_one_vel;
     phase_two_vel_old = phase_two_vel;
-      ROS_INFO("phase 1 velocity = %.2f  --- phase 2 velocity = %.2f", phase_one_vel, phase_two_vel);
+    ROS_INFO("\n velocidad = %.2f \n phase 1 velocity = %.2f  \n phase 2 velocity = %.2f", velocity_robot_, phase_one_vel, phase_two_vel);
   }
 }
-
 
 /******************************************************
  * Confirmacion de la lectura de las patas
@@ -91,6 +122,9 @@ bool common_methods::legs_readed(){
 /******************************************************
  * Callbacks
  ******************************************************/
+
+// La suscripcion a cmd_vel nos indica la velocidad lineal y angular segun el joystick del mando
+// La suscripcion a joy nos permite leer los botones y ejes
 void common_methods::init_subscribers()
 {
   velocity_subs = nh.subscribe("/cmd_vel", 1, &common_methods::cmd_vel_callback, this);
@@ -100,7 +134,7 @@ void common_methods::init_subscribers()
 
 void common_methods::cmd_vel_callback(const geometry_msgs::Twist::ConstPtr &vel)
 {
-  static bool avance = false;
+//  static bool avance = false;
   static float linear_old = 0.0;
   static float linear_actual = 0.0;
   static float angular_old = 0.0;
@@ -110,14 +144,35 @@ void common_methods::cmd_vel_callback(const geometry_msgs::Twist::ConstPtr &vel)
   linear_actual = vel->linear.x;
   angular_actual = vel->angular.z;
 
-  if(linear_actual > 0)
-    avance = true;
-  else
-    avance = false;
+  if(linear_actual == 0){
+    reverse_ = false;
+    advance_ = false;
+  }
+  else if (linear_actual < 0){
+    advance_ = false;
+    reverse_ = true;
+  }
+  else if (linear_actual > 0){
+    advance_ = true;
+    reverse_ = false;
+  }
+
+  if(angular_actual == 0){
+    turn_left_ = false;
+    turn_right_ = false;
+  }
+  else if(angular_actual < 0){
+    turn_left_ = true;
+    turn_right_ = false;
+  }
+  else if(angular_actual > 0){
+    turn_left_ = false;
+    turn_right_ = true;
+  }
 
   if((linear_old != linear_actual) || (angular_old != angular_actual))
   {
-//    ROS_INFO("velocidad lineal: %.2f -- velocidad angular: %.2f", linear_actual, angular_actual);
+    //ROS_INFO("velocidad lineal: %.2f -- velocidad angular: %.2f", linear_actual, angular_actual);
     linear_old = linear_actual;
     angular_old = angular_actual;
   }
@@ -128,18 +183,22 @@ void common_methods::joystick_callback(const sensor_msgs::Joy::ConstPtr& joy)
   static bool eStop = true;
   const int eStop_button = 5; // Boton del Joystick que es R1
   const int exit_button = 2; // Boton del Joystick que es el circulo
-  static float velocity = 0.1;
+  static float velocity = 0.2;
 
-  float vel_increase = 0.01;
-  const float speed_max = 0.75;
+  // Velocidad segun el numero de Froude
+  // Para una pata con un diametro de 200[mm] = 1.4
+  // Para una pata con un diametro de 150[mm] = 1.21
+  const float speed_max = 0.75; //0.75
   const float speed_min = 0.0;
+  float vel_increase = 0.01;
+
 
   // Si se pulsa triangulo
   if((joy->buttons[3] == 1) && (joy->buttons[eStop_button] == 1))
   {
     if(velocity < speed_max){
       velocity = velocity + vel_increase;
-      ROS_INFO("velocidad en m/s: %.2f", velocity);
+      ROS_INFO("velocidad de avance [m/s]: %.2f", velocity);
     }
   }
 
@@ -148,11 +207,13 @@ void common_methods::joystick_callback(const sensor_msgs::Joy::ConstPtr& joy)
   {
     if(velocity >= speed_min){
       velocity = velocity - vel_increase;
-      ROS_INFO("velocidad en m/s: %.2f", velocity);
+      ROS_INFO("velocidad de avance [m/s]: %.2f", velocity);
     }
   }
 
   velocity_robot_ = velocity;
+
+  // Boton R1
   if(joy->buttons[eStop_button] == 1)
   {
     eStop = false;
@@ -164,6 +225,7 @@ void common_methods::joystick_callback(const sensor_msgs::Joy::ConstPtr& joy)
     eStop_ = true;
   }
 
+  // Boton circulo -> cambio modo de caminar
   if(joy->buttons[exit_button] == 1)
   {
     exit_button_ = false;
@@ -183,7 +245,6 @@ void common_methods::joystick_callback(const sensor_msgs::Joy::ConstPtr& joy)
 common_methods::common_methods()
 {
   ROS_INFO("Entro en el constructor");
-
   init_subscribers();
 
   setup_legs(nh);

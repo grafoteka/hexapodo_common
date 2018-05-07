@@ -1,10 +1,8 @@
 <?xml version="1.0" ?>
 <robot name="pata_c" xmlns:xacro="http://ros.org/wiki/xacro">
 
-<!--xacro:property name="motor_reduction"  value="${529.0/16}"/-->
-<xacro:property name="motor_reduction"  value="${1}"/>
-<!--xacro:property name="motor_max_effort" value="${3.5}"/-->
-<xacro:property name="motor_max_effort" value="${12}"/>
+<xacro:property name="motor_reduction"  value="${529.0/16}"/>
+<xacro:property name="motor_max_effort" value="${3.75}"/>
 <xacro:property name="motor_max_rev"    value="${1256.637/motor_reduction}"/>
 
 <xacro:macro name="pata_c" params="name parent_link right *origin">
@@ -17,7 +15,7 @@
     <!--Definicion del link de la pata-->
     <!--*******************************************************************************************-->
 
-    <link name="${name}_pata_c_link">
+    <link name="${name}_link">
 
         <!-- El origen de la pata varia en funcion de si se trata de una pata de la zona izquierda -->
         <!-- o de la zona derecha que se pasa como parametro -->
@@ -66,7 +64,7 @@
     <joint name="${name}_to_${parent_link}_joint" type="continuous">
         <xacro:insert_block name="origin"/>
         <parent link="${parent_link}"/>
-        <child link="${name}_pata_c_link"/>
+        <child link="${name}_link"/>
         <axis xyz="0 1 0"/>
         <limit effort="${motor_max_effort}" velocity="${motor_max_rev}"/> <!-- Nm rads/s -->
     </joint>
@@ -80,7 +78,7 @@
         <joint name="${name}_to_${parent_link}_joint">
             <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
         </joint>
-        <actuator name="${name}_motor">
+        <actuator name="${name}_actuator">
             <mechanicalReduction>${motor_reduction}</mechanicalReduction>
             <hardwareInterface>EffortJointInterface</hardwareInterface>
         </actuator>
@@ -90,9 +88,9 @@
     <!--Definicion de las propiedades de gazebo-->
     <!--*******************************************************************************************-->
 
-    <gazebo reference="${name}_pata_c_link">
-        <mu1>100000.0</mu1>
-        <mu2>100000.0</mu2>
+    <gazebo reference="${name}_link">
+        <mu1>1</mu1>
+        <mu2>1</mu2>
         <material>Gazebo/Grey</material>
     </gazebo>
 

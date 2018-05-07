@@ -4,6 +4,7 @@
 //  Archivo: hexapodo_fsm.cpp
 //  Descripcion: Programa que lee del joystick el boton del circulo y selecciona el
 //  modo de marcha segun el valor de este.
+//  El nodo que lee el modo de marcha seleccionado es el hexapodo_fsm_listener.cpp
 //====================================================================================
 
 
@@ -51,7 +52,7 @@ void joystick_callback(const sensor_msgs::Joy::ConstPtr& joy)
   const int modos_totales = 5;
   static int boton_modo;
   static int boton_modo_old;
-  // Si se pulsa el circulo
+  // Si se pulsa el circulo se cambia el modo de marcha
   if(joy->buttons[2] == 1)
   {
     boton_modo++;
@@ -80,11 +81,11 @@ int main(int argc, char **argv)
   //---------------------------------------------------------------------------------
 
   //Inicio del nodo en ROS y el node handle
-  ros::init(argc, argv, "walking_modes");
+  ros::init(argc, argv, "hexapodo_fsm_pub");
   ros::NodeHandle nh;
 
   ros::Subscriber joystick = nh.subscribe("/joy", 1, joystick_callback);
-  ros::Publisher walking_mode = nh.advertise<std_msgs::String>("walking_mode", 1000);
+  ros::Publisher pub = nh.advertise<std_msgs::String>("/hexapodo_fsm_pub", 10);
 
   ros::Rate rate(10.0);
 
@@ -96,65 +97,67 @@ int main(int argc, char **argv)
   //  Bucle del programa principal
   //---------------------------------------------------------------------------------
 
-  ROS_INFO("Entro en el while");
+  //ROS_INFO("Entro en el while");
   while(ros::ok()){
 
     static int modo_old = -1;
     static std_msgs::String msg; // Variable para el mensaje que se publica
 
-  if(modo != modo_old)
-  {
-    modo_old = modo;
-
-
-    switch(modo){
-
-    // Stand by
-    case 0:
-        ROS_INFO("Modo Stand By");
-        msg.data = "stand_by";
-//      operation_mode_actual = stand_by;
-      break;
-
-    // Altern tripod
-    case 1:
+    // A este if se entra la primera vez y luego solo si se vuelve a pulsar el
+    // boton del circulo, entonces se cambia el modo de marcha
+    if(modo != modo_old)
     {
-      ROS_INFO("Modo Altern Tripod");
-      msg.data = "altern_tripod";
-      // Cuando las patas ya están en posicion
+      modo_old = modo;
+
+
+      switch(modo){
+
+      // Stand by
+      case 0:
+          ROS_INFO("Modo Stand By");
+          msg.data = "stand_by";
+  //      operation_mode_actual = stand_by;
+        break;
+
+      // Altern tripod
+      case 1:
+      {
+        ROS_INFO("Modo Altern Tripod");
+        msg.data = "altern_tripod";
+        // Cuando las patas ya están en posicion
+      }
+  //      operation_mode_actual = altern_tripod;
+        break;
+
+      // Tetrapod
+      case 2:
+        ROS_INFO("Modo Tetrapod");
+        msg.data = "tetrapod";
+  //      operation_mode_actual = wave;
+        break;
+
+      // Wave
+      case 3:
+        ROS_INFO("Modo Wave");
+        msg.data = "wave";
+  //      operation_mode_actual = tetrapod;
+        break;
+
+      case 4:
+        ROS_INFO("Modo Ground");
+        msg.data = "ground";
+        break;
+
+      default:
+        ROS_INFO("Default");
+        msg.data = "default";
+      }
     }
-//      operation_mode_actual = altern_tripod;
-      break;
 
-    // Tetrapod
-    case 2:
-      ROS_INFO("Modo Tetrapod");
-      msg.data = "tetrapod";
-//      operation_mode_actual = wave;
-      break;
+      pub.publish(msg);
 
-    // Wave
-    case 3:
-      ROS_INFO("Modo Wave");
-      msg.data = "wave";
-//      operation_mode_actual = tetrapod;
-      break;
-
-    case 4:
-      ROS_INFO("Modo Ground");
-      msg.data = "ground";
-      break;
-
-    default:
-      ROS_INFO("Default");
-      msg.data = "default";
-    }
-  }
-
-    walking_mode.publish(msg);
-
-    rate.sleep();
-    ros::spinOnce();
+      rate.sleep();
+      ros::spinOnce();
 
   }
   //---------------------------------------------------------------------------------

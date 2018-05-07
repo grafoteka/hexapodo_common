@@ -54,6 +54,8 @@ modes mode_read(std::string input) {
 //---------------------------------------------------------------------------------
 //  Callbacks
 //---------------------------------------------------------------------------------
+
+//Este callback escucha el modo de marcha segun hexapodo_fsm.cpp
 void hexapodo_fsm_callback(const std_msgs::String::ConstPtr& msg)
 {
   walking_mode = msg->data;
@@ -78,7 +80,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "hexapodo_fsm_listener");
   ros::NodeHandle nh;
 
-  ros::Subscriber hexapodo_fsm = nh.subscribe("/walking_mode", 1, hexapodo_fsm_callback);
+  ros::Subscriber hexapodo_fsm = nh.subscribe("/hexapodo_fsm_pub", 1, hexapodo_fsm_callback);
 
   ros::Rate rate(10.0);
   ros::AsyncSpinner spinner(0);
@@ -106,7 +108,7 @@ int main(int argc, char **argv)
         ROS_INFO("Stand by");
         mode_last = mode_actual;
       }
-      hexapod_stand_by.stand_by_fsm();
+      //hexapod_stand_by.stand_by_fsm();
       break;
     }
 
@@ -114,11 +116,12 @@ int main(int argc, char **argv)
       mode_actual = altern_tripod_mode;
       if(mode_actual != mode_last){
         ROS_INFO("Altern tripod");
+        hexapod_altern_tripod.init();
         mode_last = mode_actual;
       }
 
       // Llamamos a la fsm de altern_tripod, desde ella comprobamos la posicion de los tripodes
-      hexapod_altern_tripod.init();
+      //hexapod_altern_tripod.init();
       break;
 
     case tetrapod_mode:
@@ -147,7 +150,11 @@ int main(int argc, char **argv)
       break;
 
     case error_mode:
-      ROS_INFO("Error");
+      mode_actual = error_mode;
+      if(mode_actual != mode_last){
+        ROS_INFO("Error");
+        mode_last = mode_actual;
+      }
       break;
 
     }

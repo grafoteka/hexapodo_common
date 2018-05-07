@@ -1,7 +1,13 @@
 <launch>
+  <!-- Para lanzar en la U -->
   <arg name="joy_config" default="logitech" />
   <arg name="joy_dev" default="/dev/input/js0" />
   <arg name="config_filepath" default="$(find hexapodo_pad)/configuration/$(arg joy_config).config.yaml" />
+
+  <!-- Para lanzar en el MAC -->
+  <!--arg name="joy_config" default="gamepad3turbo" />
+  <arg name="joy_dev" default="/dev/input/js1" />
+  <arg name="config_filepath" default="$(find hexapodo_pad)/configuration/$(arg joy_config).config.yaml" /-->
   
   <node pkg="joy" type="joy_node" name="joy_node">
     <param name="dev" value="$(arg joy_dev)" />

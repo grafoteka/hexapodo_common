@@ -8,51 +8,51 @@ hexapodo:
     pata1_position_controller:
         type: effort_controllers/JointPositionController
         joint: pata_1_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
     pata2_position_controller:
         type: effort_controllers/JointPositionController
         joint: pata_2_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
     pata3_position_controller:
         type: effort_controllers/JointPositionController
         joint: pata_3_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
     pata4_position_controller:
         type: effort_controllers/JointPositionController
         joint: pata_4_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
     pata5_position_controller:
         type: effort_controllers/JointPositionController
         joint: pata_5_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
     pata6_position_controller:
         type: effort_controllers/JointPositionController
         joint: pata_6_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
 
   # Velocity Controllers ---------------------------------------
     pata1_velocity_controller:
         type: effort_controllers/JointVelocityController
         joint: pata_1_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
     pata2_velocity_controller:
         type: effort_controllers/JointVelocityController
         joint: pata_2_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
     pata3_velocity_controller:
         type: effort_controllers/JointVelocityController
         joint: pata_3_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
     pata4_velocity_controller:
         type: effort_controllers/JointVelocityController
         joint: pata_4_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
     pata5_velocity_controller:
         type: effort_controllers/JointVelocityController
         joint: pata_5_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
     pata6_velocity_controller:
         type: effort_controllers/JointVelocityController
         joint: pata_6_to_base_link_joint
-        pid: {p: 5.0, i: 0.0, d: 0.0}
+        pid: {p: 3.0, i: 0.0, d: 0.0}
 
