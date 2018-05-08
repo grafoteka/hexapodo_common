@@ -3,8 +3,8 @@
 
 <!--xacro:property name="motor_reduction"  value="${529.0/16}"/-->
 <xacro:property name="motor_reduction"  value="${1}"/>
-<!--xacro:property name="motor_max_effort" value="${3.5}"/-->
-<xacro:property name="motor_max_effort" value="${12}"/>
+<xacro:property name="motor_max_effort" value="${3.5}"/>
+<!--xacro:property name="motor_max_effort" value="${12}"/-->
 <xacro:property name="motor_max_rev"    value="${1256.637/motor_reduction}"/>
 
 <xacro:macro name="pata_c" params="name parent_link right *origin">
@@ -55,6 +55,17 @@
             <geometry>
                 <mesh filename="package://hexapodo_description/meshes/pvc.stl" scale="0.001 0.001 0.001"/>
             </geometry>
+            <surface>
+              <friction>
+                <ode>
+                  <mu>100000.0</mu>
+                  <mu2>100000.0</mu2>
+                  <slip1>0.0</slip1>
+                  <slip2>0.0</slip2>
+                </ode>
+              </friction>
+            </surface>
+
         </collision>
 
     </link>
@@ -90,9 +101,13 @@
     <!--Definicion de las propiedades de gazebo-->
     <!--*******************************************************************************************-->
 
+
     <gazebo reference="${name}_pata_c_link">
-        <mu1>100000.0</mu1>
-        <mu2>100000.0</mu2>
+        <mu1 value="100000.0"/>
+        <mu2 value="100000.0"/>
+        <kp  value="10000000.0" />
+        <kd  value="1.0" />
+        <fdir1 value="1 0 0"/>
         <material>Gazebo/Grey</material>
     </gazebo>
 

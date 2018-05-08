@@ -745,7 +745,7 @@ int main(int argc, char **argv)
   //---------------------------------------------------------------------------------
 
   //Inicio del nodo en ROS y el node handle
-  ros::init(argc, argv, "hexapodo_1_pata_velocidad");
+  ros::init(argc, argv, "hexapodo_6_pata_velocidad");
   ros::NodeHandle nh;
 
   ros::Subscriber joint_states_sub = nh.subscribe("/hexapodo/joint_states", 1, joint_states_callback);
