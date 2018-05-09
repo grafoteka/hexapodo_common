@@ -30,6 +30,10 @@ private:
   void init_subscribers();  // Metodo que inicia los subscriber
   void cmd_vel_callback(const geometry_msgs::Twist::ConstPtr& vel); // Callback para el twist del joystick
 
+  bool move_legs(bool start_movement);
+
+  common_methods hexapod_common_methods_;
+
 public:
   hexapodo_fsm();
 
