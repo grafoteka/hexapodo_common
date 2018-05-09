@@ -7,13 +7,16 @@ bool stand_by::getGrounded() const
 
 /******************************************************
  * Altern tripod pose
+ * Esta funcion pone al robot en tripode alterno según
+ * se levanta del suelo
+ * Primero coloca el tripode 2 y luego el tripode 1
  ******************************************************/
-void stand_by::altern_tripod_pose()
+bool stand_by::altern_tripod_pose()
 {
   ROS_INFO("Altern tripod pose");
 
-  float tripod_one_position = 0.52; // 30 grados
-  float tripod_two_position = 2 * M_PI - 0.52; // 5.76 rads --> 330 grados
+  float tripod_one_position = 0.39; //22.5 grados //0.52; // 30 grados
+  float tripod_two_position = 2 * M_PI - 0.39; //5.89 rads --> 337.5 grados //2 * M_PI - 0.52; // 5.76 rads --> 330 grados
 
   static std::vector<float> leg_actual_pos(6);
   static std::vector<float> leg_actual_error(6);
@@ -35,6 +38,54 @@ void stand_by::altern_tripod_pose()
 
   while(!pose)
   {
+    while(!pose_tripod_two)
+    {
+      // TRIPOD 2
+      for(int i = 0; i < 3; i++)
+      {
+        if(!tripod_two_reached_pos.at(i))
+        {
+          float leg_position = fmod(hexapodo_common_methods.pata[tripod_two_legs_number.at(i)]->getPos(), 2 * M_PI);
+          float error = fabs(leg_position - tripod_two_position);
+
+          //ROS_INFO("Posicion de la pata %d -- %.2f -- Error -- %.2f", tripod_one_legs_number.at(i), hexapodo_common_methods.pata[i]->getPos(), error);
+
+          float velocity = 0.5 * error;
+          if(tripod_two_safe_counter.at(i) > 100)
+          {
+            velocity = error + 0.01 * tripod_two_safe_counter.at(i);
+          }
+
+          hexapodo_common_methods.pata[tripod_two_legs_number.at(i)]->setVelocity(velocity);
+
+          //ROS_INFO("Velocidad de la pata %d -- %.2f", tripod_one_legs_number.at(i), velocity);
+
+          if (fabs(error) < 0.05)
+          {
+            hexapodo_common_methods.pata[tripod_two_legs_number.at(i)]->setPosition(tripod_two_position);
+            ROS_INFO("Posicion de la pata %d alcanzada", tripod_two_legs_number.at(i));
+            tripod_two_reached_pos.at(i) = true;
+            tripod_two_safe_counter.at(i) = 0;
+          }
+
+          else
+          {
+            tripod_two_safe_counter.at(i)++;
+          }
+        } //if(!tripod_one_reached_pos.at(i))
+
+        if(!pose_tripod_two)
+        {
+          if(std::all_of(tripod_two_reached_pos.begin(), tripod_two_reached_pos.end(), [](bool legs_in_position_true) {return legs_in_position_true;}))
+          {
+            ROS_INFO("Tripode 2 en posicion");
+            pose_tripod_two = true;
+          }
+        }
+      }
+    } //Tripod 2
+
+    // TRIPOD ONE
     while(!pose_tripod_one)
     {
       for(int i = 0; i < 3; i++)
@@ -82,51 +133,15 @@ void stand_by::altern_tripod_pose()
 
     } //while(!pose_tripod_one)
 
-    while(!pose_tripod_two)
+    if(pose_tripod_one && pose_tripod_two)
     {
-      // TRIPOD 2
-      for(int i = 0; i < 3; i++)
-      {
-        if(!tripod_two_reached_pos.at(i))
-        {
-          float leg_position = fmod(hexapodo_common_methods.pata[tripod_two_legs_number.at(i)]->getPos(), 2 * M_PI);
-          float error = fabs(leg_position - tripod_two_position);
+      pose = pose;
+      return true;
+    }
 
-          //ROS_INFO("Posicion de la pata %d -- %.2f -- Error -- %.2f", tripod_one_legs_number.at(i), hexapodo_common_methods.pata[i]->getPos(), error);
-
-          float velocity = 0.5 * error;
-          if(tripod_two_safe_counter.at(i) > 100)
-          {
-            velocity = error + 0.01 * tripod_two_safe_counter.at(i);
-          }
-
-          hexapodo_common_methods.pata[tripod_two_legs_number.at(i)]->setVelocity(velocity);
-
-          //ROS_INFO("Velocidad de la pata %d -- %.2f", tripod_one_legs_number.at(i), velocity);
-
-          if (fabs(error) < 0.05)
-          {
-            hexapodo_common_methods.pata[tripod_two_legs_number.at(i)]->setPosition(tripod_two_position);
-            ROS_INFO("Posicion de la pata %d alcanzada", tripod_two_legs_number.at(i));
-            tripod_two_reached_pos.at(i) = true;
-            tripod_two_safe_counter.at(i) = 0;
-          }
-
-          else
-          {
-            tripod_two_safe_counter.at(i)++;
-          }
-        } //if(!tripod_one_reached_pos.at(i))
-
-        if(!pose_tripod_two)
-        {
-          if(std::all_of(tripod_two_reached_pos.begin(), tripod_two_reached_pos.end(), [](bool legs_in_position_true) {return legs_in_position_true;}))
-          {
-            ROS_INFO("Tripode 2 en posicion");
-            pose_tripod_two = true;
-          }
-        }
-      } //Tripod 2
+    else
+    {
+      return false;
     }
 
   } //while(!pose)
@@ -412,10 +427,6 @@ void stand_by::stand_up()
     }
   }
 
-
-  float tripod_one_position = 0.52; //take_off_angle_rads;
-  float tripod_two_position = 0.0; //take_land_angle_rads;
-
   /*if(flag)
   {
 
@@ -427,13 +438,12 @@ void stand_by::stand_up()
   // Este era el codigo original que habia
   while(!flag)
   {
-    this ->altern_tripod_pose();
+    flag = this ->altern_tripod_pose();
     //float tripod_one_position = take_off_angle_rads;
     //float tripod_two_position = take_land_angle_rads;
-    flag = this->set_position(tripod_one_position, tripod_two_position);
+    //flag = this->set_position(tripod_one_position, tripod_two_position);
   }
   flag = false;
-
 }
 
 /******************************************************

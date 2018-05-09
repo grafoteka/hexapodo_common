@@ -29,7 +29,7 @@ private:
 
   void get_down();
 
-  void altern_tripod_pose();
+  bool altern_tripod_pose();
 
   common_methods hexapodo_common_methods;
 

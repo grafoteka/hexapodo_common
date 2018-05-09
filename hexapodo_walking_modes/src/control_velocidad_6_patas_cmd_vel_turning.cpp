@@ -8,6 +8,7 @@
 #include <geometry_msgs/Twist.h>
 #include <stand_by/stand_by.h>
 #include <common_methods/hexapod_common_methods.h>
+#include <hexapodo_fsm.h>
 
 #define _USE_MATH_DEFINES // for C++
 #include <cmath>
@@ -632,107 +633,6 @@ bool move_robot(){
         }
   }
 
-/*bool stand_up()
-{
-  static std::vector<bool> legs_in_position = {false, false, false, false, false, false};
-
-  std::vector<int>tripod_one = {0, 3, 4};
-  std::vector<int>tripod_two = {1, 2, 5};
-
-  const int tripod_quantity = 2;
-  const int tripod_length = 3;
-  int robot_configuration[tripod_quantity][tripod_length] = {{tripod_one.at(0), tripod_one.at(1), tripod_one.at(2)},
-                                                             {tripod_two.at(0), tripod_two.at(1), tripod_two.at(2)}};
-
-
-  double tripod_one_desired_position = 2 * M_PI; //5.89;
-  double tripod_two_desired_position = 2 * M_PI; //0.39;
-  // Contador de seguridad por si la pata no puede alcanzar la posicion objetivo
-  static std::vector<int> safe_counter = {0, 0, 0, 0, 0, 0};
-  static int safe_counter_qty = 10000000;
-
-  for(int i = 0; i < tripod_quantity; i++)
-        {
-          for(int j = 0; j < tripod_length; j++)
-          {
-  //          ROS_INFO("El robot esta en el suelo, empieza el movimiento");
-            // First tripod
-            if(i == 0)
-            {
-              if(!legs_in_position.at(3 * i + j))
-              {
-                //float error = (fmod(pata[robot_configuration[i][j]]->getPos(), tripod_one_desired_position));
-                float error = (fmod(patas_posicion_actual.at(robot_configuration[i][j]), tripod_one_desired_position));
-
-                ROS_INFO("Error de la pata %d --> %.2f", robot_configuration[i][j], error);
-                float velocity = abs(2.0 * error);
-                if(safe_counter.at(j) > safe_counter_qty)
-                {
-                  velocity = velocity * 1.5;
-                }
-                //ROS_INFO("Velocity tripod 1 = %.2f", velocity);
-                pata[robot_configuration[i][j]]->setVelocity(velocity);
-                if (fabs(error) < 0.05)
-                {
-                  pata[robot_configuration[i][j]]->setPosition(tripod_one_desired_position);
-                  ROS_INFO("Posicion de la pata %d alcanzada", robot_configuration[i][j]);
-                  legs_in_position.at(j) = true;
-                  safe_counter.at(j) = 0;
-                }
-
-              }
-              // Second tripod
-              else
-              {
-                if(!legs_in_position.at(j + tripod_length))
-                {
-                  float error = abs(fmod(pata[robot_configuration[i][j]]->getPos(), tripod_two_desired_position));
-                  float velocity = (1.0 * error);
-                  if(safe_counter.at(j + tripod_length) > safe_counter_qty)
-                  {
-                    velocity = velocity * 1.5;
-                  }
-                  pata[robot_configuration[i][j]]->setVelocity(velocity);
-                  if (fabs(error) < 0.05)
-                  {
-                    pata[robot_configuration[i][j]]->setPosition(tripod_two_desired_position);
-                    ROS_INFO("Posicion de la pata %d alcanzada", robot_configuration[i][j]);
-                    legs_in_position.at(j + tripod_length) = true;
-                    safe_counter.at(j + tripod_length) = 0;
-                  }
-                }
-              }
-            }
-            safe_counter.at(j + tripod_length) = safe_counter.at(j + tripod_length) + 1;
-          }
-
-        }
-
-        // Ahora toca chequear las condiciones de salida.
-        if(std::all_of(legs_in_position.begin(), legs_in_position.end(), [](bool legs_in_position_true) {return legs_in_position_true;}))
-        {
-          for(int i = 0; i < 6; i++)
-          {
-            legs_in_position.at(i) = false;
-          }
-          ROS_INFO ("All legs in position");
-          if(grounded_)
-          {
-            ROS_INFO("Grounded = false");
-            grounded_ = !grounded_;
-          }
-          else
-          {
-            ROS_INFO("Grounded = true");
-            grounded_ = true;
-          }
-          return true;
-        }
-        else
-          return false;
-
-}*/
-
 //####################################################################################
 //  Programa principal
 //####################################################################################
@@ -761,6 +661,7 @@ int main(int argc, char **argv)
   
   stand_by hexapod_stand_by;
   common_methods hexapod_common_methods;
+  hexapodo_fsm hexapodo_fsm_methods;
   hexapod_stand_by.stand_up();
 
   enum robot_state {stop, advance, turn_left, turn_right};
@@ -774,88 +675,21 @@ int main(int argc, char **argv)
   std::vector<float>tripode_1_posiciones = {2 * M_PI - 0.52, 0.52}; //{5.76, 0.52};
   std::vector<float>tripode_2_posiciones = {0.52, 2 * M_PI - 0.52};
 
-  /*pata[0]->setPosition(0.39);
-  pata[1]->setPosition(5.89);
-  pata[2]->setPosition(5.89);
-  pata[3]->setPosition(0.39);
-  pata[4]->setPosition(0.39);
-  pata[5]->setPosition(5.89);*/
 
   while(ros::ok()){
 
-    //ROS_INFO("Posicion de la pata %d --> %.2f", 1, fmod(hexapod_common_methods.pata[0]->getPos(), (2 * M_PI)));
-    if(fmod(hexapod_common_methods.pata[0]->getPos(), (2 * M_PI)) < 0)
+    if(robot_vel_linear > 0)
     {
-      ROS_INFO("Posicion de la pata %d --> %.2f", 1, (fmod(hexapod_common_methods.pata[0]->getPos(), (2 * M_PI)) + (2 * M_PI)));
-
-    }
-
-    if((phase % 2) == 0)
-    {
-      std::vector<int>tripode_1 = {0, 4};
-      std::vector<int>tripode_2 = {1, 5};
-      float tripod_one_actual_position = tripode_1_posiciones.at(0);
-      float tripod_one_desired_position = tripode_1_posiciones.at(1);
-      float tripod_two_actual_position = tripode_2_posiciones.at(1);
-      float tripod_two_desired_position = tripode_2_posiciones.at(0);
-
-      float pata_1_actual_position = fmod(hexapod_common_methods.pata[0]->getPos(), (2 * M_PI));
-      float pata_5_actual_position = fmod(hexapod_common_methods.pata[4]->getPos(), (2 * M_PI));
-      float pata_2_actual_position = fmod(hexapod_common_methods.pata[1]->getPos(), (2 * M_PI));
-      float pata_6_actual_position = fmod(hexapod_common_methods.pata[5]->getPos(), (2 * M_PI));
-      float pata_1_actual_position_abs = fabs(pata_1_actual_position);
-      std::vector<float> error(6);
-
-      error.at(1) = tripod_one_desired_position - pata_2_actual_position;
-      error.at(5) = tripod_one_desired_position - pata_6_actual_position;
-
-      if(M_PI < pata_1_actual_position <= (2 * M_PI))
+      static float robot_vel_linear_old = 0.0;
+      if(robot_vel_linear_old != robot_vel_linear)
       {
-        error.at(0) = (tripod_one_desired_position ) - pata_1_actual_position;
-        error.at(4) = tripod_one_desired_position - pata_5_actual_position;
+        robot_vel_linear_old = robot_vel_linear;
+        ROS_INFO("Velocidad lineal positiva: %.2f", robot_vel_linear);
       }
 
-      else
-      {
-        error.at(0) = tripod_one_desired_position - pata_1_actual_position;
-        error.at(4) = tripod_one_desired_position - pata_5_actual_position;
-      }
+      hexapodo_fsm_methods.fsm(robot_vel_linear);
 
-      ROS_INFO("Error de la pata 1 -- %.2f Posicion deseada -- %.2f", error.at(0), tripod_one_desired_position);
-      ROS_INFO("Error de la pata 2 -- %.2f Posicion deseada -- %.2f", error.at(1), tripod_two_desired_position);
-      ROS_INFO("Error de la pata 5 -- %.2f Posicion deseada -- %.2f", error.at(4), tripod_one_desired_position);
-      ROS_INFO("Error de la pata 6 -- %.2f Posicion deseada -- %.2f", error.at(5), tripod_two_desired_position);
-
-      hexapod_common_methods.pata[2]->setPosition(2 * M_PI - 0.52);
-      hexapod_common_methods.pata[3]->setPosition(0.52);
-      hexapod_common_methods.pata[0]->setVelocity(-error.at(0));
-      hexapod_common_methods.pata[4]->setVelocity(-error.at(4));
-      hexapod_common_methods.pata[5]->setPosition(2 * M_PI - 0.52);
-      hexapod_common_methods.pata[4]->setPosition(0.52);
-      //hexapod_common_methods.pata[1]->setVelocity(error.at(1));
-      //hexapod_common_methods.pata[5]->setVelocity(error.at(5));
     }
-
-
-
-
-    //ROS_INFO("Entro al while");
-    /*pata[1]->setVelocity(10.0);
-    pata[5]->setVelocity(10.0);
-    pata[0]->setVelocity(-10.0);
-    pata[4]->setVelocity(-10.0);*/
-    /*if((pata[1]->getPos() == 5.89) && (pata[5]->getPos() == 5.89)){
-      ROS_INFO("Entro en el bucle");
-      pata[1]->setVelocity(1.0);
-      pata[5]->setVelocity(1.0);
-    }
-    else
-    {
-      pata[1]->setPosition(5.89);
-      pata[5]->setPosition(5.89);
-      pata[1]->setVelocity(1.0);
-      pata[5]->setVelocity(1.0);
-    }*/
 
     /******************************************************
      * Maquina de estados
